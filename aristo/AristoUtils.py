@@ -13,6 +13,16 @@ class AristoUtils:
 
         return angle
     
+    def __calculate_angle_from_vectors(self, v1a, v1b, v2a, v2b):
+        """Calculate the angle between two vectors v1 and v2 defined by points (v1a, v1b) and (v2a, v2b)."""
+        vec1 = v1b - v1a
+        vec2 = v2b - v2a
+
+        cosine_angle = np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+        angle = np.arccos(np.clip(cosine_angle, -1.0, 1.0))
+
+        return angle
+    
     def __define_plane(self, p1, p2, p3):
         # Create two vectors in the plane
         v1 = p2 - p1
@@ -55,12 +65,14 @@ class AristoUtils:
         angles = {}
         # Calculate angles for the index finger joints
         palm_face = self.__define_plane(hand_data[0], hand_data[5], hand_data[17])
-        actuator_offset = np.deg2rad(20)
-        actuator_gain = 1.5
-
-        angles['distal'] = (self.__calculate_angle(hand_data[2], hand_data[3], hand_data[4]) - np.pi)
+        actuator_offset = np.deg2rad(-20)
+        actuator_gain = 1.2
+        raw_thumb_actuator_angle = self.__calculate_angle(hand_data[0], hand_data[2], hand_data[3]) - np.pi + actuator_offset
+        # raw_thumb_actuator_angle = self.__calculate_angle_from_vectors(hand_data[9],hand_data[0], hand_data[2], hand_data[3]) - np.pi + actuator_offset
+        angles['actuators'] = actuator_gain * self.__project_angle_onto_plane(raw_thumb_actuator_angle, palm_face[0])
+        
         angles['proximal'] = (self.__calculate_angle(hand_data[1], hand_data[2], hand_data[3]) - np.pi)
-        angles['actuators'] = actuator_gain * self.__project_angle_onto_plane(self.__calculate_angle(hand_data[0], hand_data[2], hand_data[3]) - np.pi + actuator_offset, palm_face[0])
+        angles['distal'] = (self.__calculate_angle(hand_data[2], hand_data[3], hand_data[4]) - np.pi)
 
         return angles
     
