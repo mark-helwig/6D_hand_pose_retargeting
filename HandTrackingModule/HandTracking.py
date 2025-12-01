@@ -241,3 +241,34 @@ class HandTracking():
             # Draw the plot
             plt.draw()
             plt.pause(0.0001)
+    
+    def anchor_hand(self, data):
+        data = [x - data[0] for x in data]
+        return data
+
+    def reorient_hand(self, data):
+        # Rotate 180 degrees around the Z-axis
+        R = np.array([[-1, 0, 0],
+                    [0, -1, 0],
+                    [0, 0, 1]])
+        data = np.dot(data, R.T)
+        return data
+    
+    def calculate_angle(self, a, b, c):
+        """Calculate the angle between three points."""
+        a = np.array(a)  # First point
+        b = np.array(b)  # Mid point
+        c = np.array(c)  # End point
+
+        ba = a - b
+        bc = c - b
+
+        cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+        angle = np.arccos(cosine_angle)
+
+        return np.degrees(angle) - 180
+    
+    def display_angle(self, img, angle):
+        cv2.putText(img, 'Angle: {}'.format(int(angle)), (10, 70),cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 3)
+        
+        return img
