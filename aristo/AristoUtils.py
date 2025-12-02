@@ -65,8 +65,8 @@ class AristoUtils:
         angles = {}
         # Calculate angles for the index finger joints
         palm_face = self.__define_plane(hand_data[0], hand_data[5], hand_data[17])
-        actuator_offset = np.deg2rad(-20)
-        actuator_gain = 1.2
+        actuator_offset = np.deg2rad(15)
+        actuator_gain = 1.5
         raw_thumb_actuator_angle = self.__calculate_angle(hand_data[0], hand_data[2], hand_data[3]) - np.pi + actuator_offset
         # raw_thumb_actuator_angle = self.__calculate_angle_from_vectors(hand_data[9],hand_data[0], hand_data[2], hand_data[3]) - np.pi + actuator_offset
         angles['actuators'] = actuator_gain * self.__project_angle_onto_plane(raw_thumb_actuator_angle, palm_face[0])
