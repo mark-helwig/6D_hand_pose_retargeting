@@ -5,3 +5,4 @@ zed/HandTrackingModule/__pycache__
 aristo/__pycache__
 *.pyc
 */__pycache__/*
+.vscode

@@ -46,6 +46,10 @@ class HandKinematics:
         
 
 class CamCampture:
+    
+    frame_buffer = [10]  # Buffer to store recent frames for smoothing
+    current_frame = 0
+    smoothing = False
     def __init__(self):
         try:
             self.pipeline = rs.pipeline()
@@ -89,7 +93,14 @@ class CamCampture:
             data_right = self.detector.anchor_hand(data_right)
             data_right = self.detector.reorient_hand(data_right)
             angles = self.aristo.get_angles(data_right)
-            return angles
+            self.frame_buffer[self.current_frame % len(self.frame_buffer)] = angles
+            self.current_frame  = (self.current_frame + 1) % len(self.frame_buffer)
+            if self.smoothing:
+                return np.mean(self.frame_buffer, axis=0).tolist()
+            else:
+                return angles
+        else:
+            self.frame_buffer = [10]  # Reset buffer if hand not detected
         return None
 
 
