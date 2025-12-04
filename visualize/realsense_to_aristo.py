@@ -40,7 +40,7 @@ class HandKinematics:
         active_joints = self.hand.get_active_joints()
         # print(self.hand.joint_names)
         self.hand.set_qpos(self.target_positions)
-        print(self.target_positions)
+        print([np.rad2deg(pos) for pos in self.target_positions])
         self.scene.update_render()
         self.viewer.render()
         
@@ -54,8 +54,8 @@ class CamCampture:
         try:
             self.pipeline = rs.pipeline()
             config = rs.config()
-            config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-            config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+            config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+            config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
             profile = self.pipeline.start(config)
         except Exception as e:
             print("Failed to start RealSense pipeline:", e)
