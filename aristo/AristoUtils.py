@@ -13,6 +13,9 @@ class AristoUtils:
 
         return angle
     
+    def __define_vector(self, p1, p2):
+        return p2 - p1
+    
     def __calculate_angle_from_vectors(self, v1a, v1b, v2a, v2b):
         """Calculate the angle between two vectors v1 and v2 defined by points (v1a, v1b) and (v2a, v2b)."""
         vec1 = v1b - v1a
@@ -64,17 +67,34 @@ class AristoUtils:
         
         angles = {}
         # Calculate angles for the index finger joints
+        # palm_face = self.__define_plane(hand_data[0], hand_data[5], hand_data[17])
+        # actuator_offset = np.deg2rad(15)
+        # actuator_gain = 2.0
+        # raw_thumb_actuator_angle = self.__calculate_angle(hand_data[0], hand_data[2], hand_data[3]) - np.pi + actuator_offset
+        # angles['actuators'] = actuator_gain * self.__project_angle_onto_plane(raw_thumb_actuator_angle, palm_face[0])
+        angles['metacarpal'] = self.__calibrate_thumb_metacarpal(hand_data)
+        angles['actuators'] = self.__calibrate_thumb_actuator(hand_data)
+        angles['proximal'] = (self.__calculate_angle(hand_data[1], hand_data[2], hand_data[3]) - np.pi)
+        angles['distal'] = (self.__calculate_angle(hand_data[2], hand_data[3], hand_data[4]) - np.pi)
+
+        return angles
+    
+    def __calibrate_thumb_actuator(self, hand_data):
         palm_face = self.__define_plane(hand_data[0], hand_data[5], hand_data[17])
         actuator_offset = np.deg2rad(15)
         actuator_gain = 2.0
         raw_thumb_actuator_angle = self.__calculate_angle(hand_data[0], hand_data[2], hand_data[3]) - np.pi + actuator_offset
         # raw_thumb_actuator_angle = self.__calculate_angle_from_vectors(hand_data[9],hand_data[0], hand_data[2], hand_data[3]) - np.pi + actuator_offset
-        angles['actuators'] = actuator_gain * self.__project_angle_onto_plane(raw_thumb_actuator_angle, palm_face[0])
+        return actuator_gain * self.__project_angle_onto_plane(raw_thumb_actuator_angle, palm_face[0])
+    
+    def __calibrate_thumb_metacarpal(self, hand_data):
+        base_plane = self.__define_vector(hand_data[0], hand_data[5])
+        metacarpal_offset = np.deg2rad(-30)
+        metacarpal_gain = 2.0
+        raw_thumb_metacarpal_angle = self.__calculate_angle(hand_data[5],hand_data[0],hand_data[2])
+        return metacarpal_gain * (raw_thumb_metacarpal_angle) + metacarpal_offset
         
-        angles['proximal'] = (self.__calculate_angle(hand_data[1], hand_data[2], hand_data[3]) - np.pi)
-        angles['distal'] = (self.__calculate_angle(hand_data[2], hand_data[3], hand_data[4]) - np.pi)
 
-        return angles
     
     def get_angles(self, hand_data):
         angles = [0] * 8
@@ -96,7 +116,7 @@ class AristoUtils:
 
 
     
-        angles[0] = 0
+        angles[0] = thumb_angles['metacarpal']
         angles[3] = thumb_angles['actuators']
         angles[6] = thumb_angles['proximal']
         angles[7] = thumb_angles['distal']
