@@ -1,6 +1,7 @@
 import sys,os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from HandTrackingModule.HandTracking import HandTracking as ht
+from HandTrackingModule.Vis3D import Vis3D
 import cv2
 import numpy as np
 import open3d as o3d
@@ -27,19 +28,20 @@ def main():
     detector = ht()
 
     # Create Open3D visualization window
-    vis = o3d.visualization.Visualizer()
-    vis.create_window()
-    mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.1)
-    vis.add_geometry(mesh_frame)
+    # vis = o3d.visualization.Visualizer()
+    # vis.create_window()
+    vis = Vis3D()
+    # mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.1)
+    # vis.add_geometry(mesh_frame)
 
     # # Initialize left and right hand point clouds
     # pcd_left = o3d.geometry.PointCloud()
     # pcd_left.paint_uniform_color([1, 0.706, 0])
     # vis.add_geometry(pcd_left)
 
-    pcd_right = o3d.geometry.PointCloud()
-    pcd_right.paint_uniform_color([0, 0.651, 0.929])
-    vis.add_geometry(pcd_right)
+    # pcd_right = o3d.geometry.PointCloud()
+    # pcd_right.paint_uniform_color([0, 0.651, 0.929])
+    # vis.add_geometry(pcd_right)
 
 
     while True:
@@ -63,11 +65,23 @@ def main():
             data_right = detector.anchor_hand(data_right)
             data_right = detector.reorient_hand(data_right)
             angle = detector.calculate_angle(data_right[5], data_right[6], data_right[8])
-            vis.remove_geometry(pcd_right)
-            pcd_right = o3d.geometry.PointCloud()
-            pcd_right.points = o3d.utility.Vector3dVector(data_right)
-            pcd_right.paint_uniform_color([1, 0, 0])
-            vis.add_geometry(pcd_right)
+            vis.show_hand(data_right, color=vis.red)
+            vis.visualize_angle_projection(
+                origin=data_right[0],
+                vec_a=data_right[2] - data_right[0],
+                vec_b=data_right[5] - data_right[0],
+                plane_normal=data_right[9] - data_right[0],
+                radius=0.03,
+                color=[0.2, 0.8, 0.2],
+                vector_color=[1, 0, 0],
+                proj_color=[0, 0, 1],
+                n_points=32
+            )
+            # vis.remove_geometry(pcd_right)
+            # pcd_right = o3d.geometry.PointCloud()
+            # pcd_right.points = o3d.utility.Vector3dVector(data_right)
+            # pcd_right.paint_uniform_color([1, 0, 0])
+            # vis.add_geometry(pcd_right)
 
             img = detector.display_angle(img, angle)
         # if data_left.shape == (21, 3):
